@@ -8,6 +8,10 @@ public class Dino : MonoBehaviour
     Rigidbody2D rgb2D;
     Animator animator;
     bool isDead;
+    public float jumpforce;
+    bool m_isGround;
+
+    public bool IsGround { get => m_isGround; }
 
     private void Awake()
     {
@@ -17,11 +21,49 @@ public class Dino : MonoBehaviour
 
     private void Update()
     {
+        if (isDead || !GameManager.Ins.IsGameBegun) return;
+
         Flip();
+        
+        transform.position = new Vector3(Mathf.Clamp(transform.position.x, -11f, 11f), transform.position.y, transform.position.z);
+
+
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    rgb2D.AddForce(Vector2.up * jumpforce);
+
+        //}
+
+        if (Input.GetButtonDown("Jump") && Mathf.Abs(rgb2D.velocity.y) < 0.1)
+        {
+            rgb2D.AddForce(new Vector2(0, jumpforce), ForceMode2D.Impulse);
+
+        }
+        if (Input.GetButtonDown("Down"))
+        {
+            if (animator)
+            {
+                animator.SetBool("Entry", true);
+            }
+
+        }
+        // rgb2D.AddForce(new Vector2(Vector2.up * jumpforce), ForceMode2D.Impulse);
+
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    animator.SetBool("Grounded", grounded);
+        //    if (grounded)
+        //    {
+        //        grounded = false;
+        //        rigidbody2D.AddForce(Vector2.up * jumpPow);
+        //    }
+        //}
     }
 
     private void FixedUpdate()
     {
+       if (isDead || !GameManager.Ins.IsGameBegun) return;
+
         MoveHandle();
     }
 
@@ -86,6 +128,7 @@ public class Dino : MonoBehaviour
 
     void Die()
     {
+        isDead = true;
         if(animator)
         {
             animator.SetTrigger("Dead");
@@ -110,6 +153,18 @@ public class Dino : MonoBehaviour
                 Die();
 
                 GameManager.Ins.IsGameOver = true; 
+            }
+        }
+
+
+        if (Input.GetButtonDown("Jump") && Mathf.Abs(rgb2D.velocity.y) < 0.1)
+        {
+            Dino dino = collision.gameObject.GetComponent<Dino>();
+      
+            if (dino.m_isGround)
+            {
+                dino.m_isGround = false;
+                rgb2D.AddForce(new Vector2(0, jumpforce), ForceMode2D.Impulse);
             }
         }
 
